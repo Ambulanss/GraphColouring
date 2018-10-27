@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-
+#include "graphloading.hpp"
 int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     /* -----
     Returns the lowest colour for colouring given vertex.
@@ -46,7 +46,32 @@ std::vector<int> greedy(std::vector<std::vector<bool> > &matrix){
     return result;
 }
 
-int main(){
-    
+void print_result(std::vector<int> vec){
+    std::cout << "\nNumber of colours: " << vec[0] << std::endl;
+    std::cout << "Consecutive colour values: " << std::endl;
+    for (int i = 1; i < vec.size(); i++)
+        if (i != vec.size()-1)
+            std::cout << vec[i] << ", ";
+        else
+            std::cout << vec[i] << std::endl; 
+}
+
+
+int main(int argc, char const *argv[])
+{
+    if(argc > 1)
+    {
+        auto matrix(load_matrix_from_file(static_cast<std::string>(argv[1])));
+        std::vector<int> result;
+        result = greedy(matrix);
+        print_result(result);
+        
+    }
+    else
+    {
+        std::cout<<"Potrzeba wiecej argumentow.\n";
+        return 0;
+    }
     return 0;
 }
+
