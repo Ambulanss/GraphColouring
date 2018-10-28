@@ -10,17 +10,17 @@ int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
             and colours of vertices (index means a vertex number and value is colour)
     ----- */
 
-    std::vector<bool> possible (result[0]+2, true); //vector of all colours used so far + 1
+    std::vector<bool> available_colours (result[0]+2, true); //vector of all colours used so far + 1
     for (int i = 1; i < row.size(); i++){
         if (row[i]){ //if a neighbour is found
             if (result[i]){ //if a neighbour is coloured - his value in result vector is != 0
-                possible[result[i]] = false; //set this colour as impossible to use
+                available_colours[result[i]] = false; //set this colour as impossible to use
             }
         }
     }
-    for (int i = 1; i < possible.size(); i++){
-        if (possible[i]){ //if a colour is possible to use
-            if (i == possible.size()-1){ //if chosen colour is new
+    for (int i = 1; i < available_colours.size(); i++){
+        if (available_colours[i]){ //if a colour is possible to use
+            if (i == available_colours.size()-1){ //if chosen colour is new
                 result[0]++; //then the number of colours must be incremented
             }
             return i; 
