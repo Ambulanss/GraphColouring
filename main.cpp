@@ -13,14 +13,14 @@ int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     ----- */
 
     std::vector<bool> available_colours (result[0]+2, true); //vector of all colours used so far + 1
-    for (int i = 1; i < row.size(); i++){
+    for (unsigned int i = 1; i < row.size(); i++){
         if (row[i]){ //if a neighbour is found
             if (result[i]){ //if a neighbour is coloured - his value in result vector is != 0
                 available_colours[result[i]] = false; //set this colour as impossible to use
             }
         }
     }
-    for (int i = 1; i < available_colours.size(); i++){
+    for (unsigned int i = 1; i < available_colours.size(); i++){
         if (available_colours[i]){ //if a colour is possible to use
             if (i == available_colours.size()-1){ //if chosen colour is new
                 result[0]++; //then the number of colours must be incremented
@@ -42,7 +42,7 @@ std::vector<int> greedy(std::vector<std::vector<bool> > &matrix){
 
     int colour;
     std::vector<int> result (matrix.size(), 0);
-    for (int i = 1; i < matrix.size(); i++){
+    for (unsigned int i = 1; i < matrix.size(); i++){
         colour = lowest_colour(matrix[i], result);
         result[i] = colour;
     }
@@ -53,7 +53,7 @@ std::vector<int> greedy(std::vector<std::vector<bool> > &matrix){
 void print_result(std::vector<int> vec){
     std::cout << "\nNumber of colours: " << vec[0] << std::endl;
     std::cout << "Consecutive colour values: " << std::endl;
-    for (int i = 1; i < vec.size(); i++)
+    for (unsigned int i = 1; i < vec.size(); i++)
         if (i != vec.size()-1)
             std::cout << vec[i] << ", ";
         else
@@ -91,9 +91,9 @@ bool increasing = true){
     unsigned n = matrix.size();
     std::vector< std::pair <int,int> > result (n);
     unsigned degree = 0;
-    for (int i = 1; i < n; i++){
+    for (unsigned int i = 1; i < n; i++){
         result[i].first = i;
-        for (int j = 1; j < n; j++){
+        for (unsigned int j = 1; j < n; j++){
             if (i != j && matrix[i][j]){ //if a neighbour is found
                 degree++; 
             }
@@ -125,7 +125,7 @@ std::vector<int> largest_first(std::vector<std::vector<bool> > &matrix){
     std::vector< std::pair<int, int> > indexes (n);
     indexes = sort_degrees(matrix);
 
-    for (int i = 1; i < n; i++){
+    for (unsigned int i = 1; i < n; i++){
         colour = lowest_colour(matrix[indexes[i-1].first], result); //indexes is indexed from 0
         result[indexes[i-1].first] = colour;
     }
