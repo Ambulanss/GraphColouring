@@ -11,7 +11,7 @@ int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     @result - vector containing current number of used colours (at index 0)
             and colours of vertices (index means a vertex number and value is colour)
     ----- */
-    
+
     std::vector<bool> available_colours (result[0]+2, true); //vector of all colours used so far + 1
     for (int i = 1; i < row.size(); i++){
         if (row[i]){ //if a neighbour is found
