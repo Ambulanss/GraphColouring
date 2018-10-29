@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <bits/stdc++.h> 
 #include "graphloading.hpp"
+
 int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     /* -----
     Returns the lowest colour for colouring given vertex.
@@ -9,7 +11,7 @@ int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     @result - vector containing current number of used colours (at index 0)
             and colours of vertices (index means a vertex number and value is colour)
     ----- */
-
+    
     std::vector<bool> available_colours (result[0]+2, true); //vector of all colours used so far + 1
     for (int i = 1; i < row.size(); i++){
         if (row[i]){ //if a neighbour is found
@@ -29,6 +31,7 @@ int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     return -1;
 }
 
+
 std::vector<int> greedy(std::vector<std::vector<bool> > &matrix){
     /* -----
     Returns a vector with number of used colours as the first element
@@ -46,6 +49,7 @@ std::vector<int> greedy(std::vector<std::vector<bool> > &matrix){
     return result;
 }
 
+
 void print_result(std::vector<int> vec){
     std::cout << "\nNumber of colours: " << vec[0] << std::endl;
     std::cout << "Consecutive colour values: " << std::endl;
@@ -57,14 +61,92 @@ void print_result(std::vector<int> vec){
 }
 
 
+bool sortbysec(const std::pair<int,int> &a, const std::pair<int,int> &b) {   
+    /* ----- 
+    Returns the third argument for sort() function
+    - for sorting a vector of pairs by second element of pairs.
+    ----- */
+    return (a.second < b.second); 
+} 
+
+
+bool sortbysecdesc(const std::pair<int,int> &a, const std::pair<int,int> &b) { 
+    /* -----
+    Returns the third argument for sort() function - for sorting in descending order
+    a vector of pairs by second element of pairs.
+    ----- */
+       return a.second>b.second; 
+} 
+
+
+std::vector< std::pair <int,int> > sort_degrees(std::vector<std::vector<bool> > &matrix, 
+bool increasing = true){
+    /* -----
+    Returns a sorted vector of pairs, where every pair consists of a vertex and its degree.
+    A vector is sorted by a vertex's degree.
+
+    @matrix - adjacency matrix of input graph
+    @increasing - if true, function sorts by descending order, if false - in descending
+    ----- */
+    unsigned n = matrix.size();
+    std::vector< std::pair <int,int> > result (n);
+    unsigned degree = 0;
+    for (int i = 1; i < n; i++){
+        result[i].first = i;
+        for (int j = 1; j < n; j++){
+            if (i != j && matrix[i][j]){ //if a neighbour is found
+                degree++; 
+            }
+        }
+        result[i].second = degree;
+        degree = 0;
+    }
+    if (increasing){
+        sort(result.begin(), result.end(), sortbysecdesc);
+    }
+    else {
+        sort(result.begin(), result.end(), sortbysec); 
+    }
+    return result;
+}
+
+
+std::vector<int> largest_first(std::vector<std::vector<bool> > &matrix){
+    /* -----
+    Returns a vector with number of used colours as the first element
+    and colours of consecutive vertices. Uses largest first algorithm - 
+    processes vertices with highest degree first.
+
+    @matrix - adjacency matrix of input graph
+    ----- */
+    unsigned n = matrix.size();
+    int colour;
+    std::vector<int> result (n, 0);
+    std::vector< std::pair<int, int> > indexes (n);
+    indexes = sort_degrees(matrix);
+
+    for (int i = 1; i < n; i++){
+        colour = lowest_colour(matrix[indexes[i-1].first], result); //indexes is indexed from 0
+        result[indexes[i-1].first] = colour;
+    }
+    return result;
+}
+
+
 int main(int argc, char const *argv[])
 {
     if(argc > 1)
     {
         auto matrix(load_matrix_from_file(static_cast<std::string>(argv[1])));
+
         std::vector<int> result;
         result = greedy(matrix);
+        std::cout << "\n----- Greedy algorithm -----";
         print_result(result);
+        std::vector<int> result2;
+        result2 = largest_first(matrix);
+        std::cout << "\n----- Largest first algorithm -----";
+        print_result(result2);
         
     }
     else
@@ -74,4 +156,3 @@ int main(int argc, char const *argv[])
     }
     return 0;
 }
-
