@@ -132,27 +132,48 @@ std::vector<int> largest_first(std::vector<std::vector<bool> > &matrix){
     return result;
 }
 
-
-int main(int argc, char const *argv[])
+auto parse_input(int argc, char const *argv[])
 {
-    if(argc > 1)
-    {
-        auto matrix(load_matrix_from_file(static_cast<std::string>(argv[1])));
-
-        std::vector<int> result;
-        result = greedy(matrix);
-        std::cout << "\n----- Greedy algorithm -----";
-        print_result(result);
-        std::vector<int> result2;
-        result2 = largest_first(matrix);
-        std::cout << "\n----- Largest first algorithm -----";
-        print_result(result2);
-        
+    std::vector<std::vector<bool> > matrix;
+    std::string filename;
+    //int filetype;
+    if(argc > 1){
+        filename = static_cast<std::string>(argv[1]);
+        /*if(argc > 2)
+        {
+            filetype = atoi(argv[2]);
+            matrix = load_matrix(filename, filetype);
+        }
+        else
+        {
+            matrix = load_matrix(filename, 0);
+        }*/
+        matrix = load_matrix(filename);
+        return matrix; 
     }
     else
     {
-        std::cout<<"Potrzeba wiecej argumentow.\n";
-        return 0;
+        std::cout<<"Podaj przynajmniej nazwe pliku"<<std::endl;
+        exit(-1);
     }
+}
+
+int main(int argc, char const *argv[])
+{
+    std::vector<std::vector<bool> >matrix(parse_input(argc, argv));
+
+    std::vector<int> result;
+    result = greedy(matrix);
+    std::cout << "\n----- Greedy algorithm -----";
+    print_result(result);
+    std::vector<int> result2;
+    result2 = largest_first(matrix);
+    std::cout << "\n----- Largest first algorithm -----";
+    print_result(result2);
     return 0;
 }
+//TODO
+/*
+1. Generator instancji
+2. 
+*/
