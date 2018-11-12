@@ -67,8 +67,6 @@ auto load_matrix_from_col(std::string filename)
             std::cout<<"\nCorrupted graph source file:" << filename<<"\n Line: "<< line <<std::endl;
         }
     }
-    std::cout<< "Check if matrix is ok: \n";
-    print_matrix(matrix);
     return matrix;
 }
 
