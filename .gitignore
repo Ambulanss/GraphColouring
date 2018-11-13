@@ -1,6 +1,8 @@
 
 kocor
 *.exe
+*.txt
+*.col
 \.vscode/settings\.json
 
 main
