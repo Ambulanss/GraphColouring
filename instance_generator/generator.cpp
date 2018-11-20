@@ -94,7 +94,7 @@ class AdjacencyMatrix{
                 {
                     if(matrix[i][j] == true)
                     {
-                        stream<<j<<" "<<i<<std::endl;
+                        stream<<j<<" "<<i<<"\n";
                     }
                 }
             }
