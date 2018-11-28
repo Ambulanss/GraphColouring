@@ -1,0 +1,3 @@
+In order to build run this command in the solver directory:
+$ cmake build
+$ cmake --build build

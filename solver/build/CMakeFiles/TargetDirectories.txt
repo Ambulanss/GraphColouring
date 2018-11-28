@@ -1,0 +1,3 @@
+/home/ambulanss/Code/GraphColouring/solver/build/CMakeFiles/rebuild_cache.dir
+/home/ambulanss/Code/GraphColouring/solver/build/CMakeFiles/solver.dir
+/home/ambulanss/Code/GraphColouring/solver/build/CMakeFiles/edit_cache.dir

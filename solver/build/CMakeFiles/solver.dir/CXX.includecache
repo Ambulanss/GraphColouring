@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/graphloading.hpp
+iostream
+-
+fstream
+-
+vector
+-
+sstream
+-
+
+/home/ambulanss/Code/GraphColouring/solver/src/main.cpp
+iostream
+-
+vector
+-
+bits/stdc++.h
+-
+graphloading.hpp
+/home/ambulanss/Code/GraphColouring/solver/src/graphloading.hpp
+

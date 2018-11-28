@@ -136,24 +136,14 @@ auto parse_input(int argc, char const *argv[])
 {
     std::vector<std::vector<bool> > matrix;
     std::string filename;
-    //int filetype;
     if(argc > 1){
         filename = static_cast<std::string>(argv[1]);
-        /*if(argc > 2)
-        {
-            filetype = atoi(argv[2]);
-            matrix = load_matrix(filename, filetype);
-        }
-        else
-        {
-            matrix = load_matrix(filename, 0);
-        }*/
         matrix = load_matrix(filename);
         return matrix; 
     }
     else
     {
-        std::cout<<"Podaj przynajmniej nazwe pliku"<<std::endl;
+        std::cout<<"Usage:\nsolver <instance_name>"<<std::endl;
         exit(-1);
     }
 }
