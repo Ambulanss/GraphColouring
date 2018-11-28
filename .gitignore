@@ -3,3 +3,4 @@ kocor
 instances/*
 \.vscode/settings\.json
 bin
+instance_generator/*.txt
