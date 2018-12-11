@@ -155,9 +155,9 @@ auto parse_input(int argc, char const *argv[])
 class genetic_parameters{
     public:
         int population_size;
-        int breeders_N; //percent of all individuals; parents chosen as the best of all - TODO: it has to be double
-        int breeders_M; //percent of all individuals; parents chosen randomly - TODO: it has to be double
-        int mutation_change; //chance for mutation, expressed as percent - TODO: it has to be double
+        double breeders_p; //percent of all individuals; parents chosen as the best of all - TODO: it has to be double
+        double breeders_q; //percent of all individuals; parents chosen randomly - TODO: it has to be double
+        double mutation_change; //chance for mutation, expressed as percent - TODO: it has to be double
         /* parents_choosing - number expressing when should we use 
         first parents choosing method and when the second one. 
         It means after which generation should we switch to the second method. */
@@ -167,6 +167,80 @@ class genetic_parameters{
         double mutation_size; //percent of values in child that should be mutated; expressed as a fraction
 };
 
+
+class individual {
+        /* value vector keeps the order of vertices to process by typical greedy algorithm.
+        We iterate not by i = 1, 2, 3, ..., n-1, but by values of value vector.
+        For example, value[1] = 3 means that the first vertex we should colour is vertex nr 3; 
+        value[2] = 7 means that the second vertex we should colour is vertex nr 7; and so on... */
+
+    public: 
+        std::vector <int> value;            //vertices
+        int fitness; 
+        int n;                              //size of main adjacency matrix
+        std::vector <int> result_colours;   //result_colours[0] is fitness - after running count_fitness
+
+        individual(){}                      //default constructor
+
+        individual (int my_n){ //engine cannot be passed as a constructor parameter;
+                                                                //it has to be only shuffle method argument
+            n = my_n;
+            fitness = 0;
+            //initialize_value(); - I left it to remember about running this method when generating population 
+            //from external class - it shouldn't be always ran by a constructor
+            initialize_colours();
+            //generate(); - like above
+        }
+
+        void initialize_colours (){ //fill colours vector with n zeroes
+            for (int i = 0; i < n; i++){
+                result_colours.push_back(0);
+            }
+        }
+
+        void initialize_value (){ //fill value vector with n zeroes
+            for (int i = 0; i < n; i++){
+                value.push_back(0);
+            }
+        }
+
+        void generate(std::default_random_engine rng) { //generate random permutation - random vertices' order
+            for (int i = 1; i < n; i++){ //first assign value equal to index to later shuffle it
+                value[i] = i;
+            }
+            std::shuffle(std::begin(value)+1, std::end(value), rng); 
+            /* shuffle everything apart from the first element
+            because the first element is dedicated for/to number of colours (which version is gramatically correct?)
+            and is initially equal to 0 */
+
+        }
+
+        void count_fitness (std::vector<std::vector<bool> > &matrix){
+            /* This function is the proper algorithm of graph colouring, which uses vertex order
+            coded in value vector.
+
+            fitness value is kept as result_colours[0] - it's the number of colours used for graph colouring. */
+            
+            int colour;
+            for (int i = 1; i < n; i++){ 
+                colour = lowest_colour(matrix[value[i]], result_colours); 
+                result_colours[value[i]] = colour;
+            }
+            fitness = result_colours[0];
+        }
+
+        void print_individual() { //every class should have something like this for debugging reasons I think
+            std::cout << "\nIndividual: ";
+            for (int i = 1; i < n; i++){
+                std::cout << value[i] << " ";
+            }
+            std::cout << "\nFitness: " << result_colours[0] << "\n";
+        }
+};
+
+
+
+
 class parents_pair{
     /* one pair of parents */
     public:
@@ -175,17 +249,15 @@ class parents_pair{
         individual child;
         int n;
 
-        parents_pair(individual A, individual B, int input_n){ //it cannot be like this;
+        parents_pair(individual A, individual B, int input_n): parent_A(A), parent_B(B), n(input_n){ 
         /* individual needs two parameters for constructor. Random engine cannot be one of them (it has to be changed),
         because it makes a mess. I would leave only n. Because of that, we need to pass n as a constructor
         parameter for parents_pair class I guess, and then set parent_A and parent_B parameters in function
         like "set_parents". */ 
-            n = input_n;
-            parent_A = A;
-            parent_B = B;
+       
         }
 
-        void create_child1(){
+        void create_child1(std::default_random_engine rng){
             /* We take first values from parent_A (until crosspoint index) and the rest
             from parent_B (the ones that are possible to use without repeating). 
             We then will the gaps with random values chosen from available ones.
@@ -196,10 +268,14 @@ class parents_pair{
             child.initialize_value(); //now the child vector is filled with zeroes
             std::vector <bool> available_values (child.n, true); //should create vector with n true values
             available_values[0] = false; //we don't have vertex nr 0
-            int crosspoint;
+            
             std::vector <int> left_indexes; //we will  use them to know where the gaps are
             bool fill_the_gaps = false; //if this is true, we know that there are some gaps (it will fore sure always be true)
-            /* TODO: crosspoint = random value from [1, child.n) */
+            
+            int crosspoint;
+            auto dist = std::uniform_int_distribution(1, child.n);
+            crosspoint = dist(rng);
+            
             for (int i = 1; i < crosspoint; i++){ //we take first values from parent A
                 child.value[i] = parent_A.value[i];
                 available_values[parent_A.value[i]] = false; //we mark used vertex as impossible to use
@@ -209,16 +285,17 @@ class parents_pair{
             }
             for (int i = crosspoint; i < child.n; i++){ //the rest is filled with possible values from parent_B
                 if (available_values[parent_B.value[i]] == true){ //if vertex hasn't been used yet
-                    child.value[i] == parent_B.value[i]; //then insert it into child
+                    child.value[i] == parent_B.value[i];    //then insert it into child
                 }
-                else { //remember that you have to fill this gap later
-                    left_indexes.push_back(i); //index i has no vertex
+                else {                                  //remember that you have to fill this gap later
+                    left_indexes.push_back(i);          //index i has no vertex
                     fill_the_gaps = true;
                 } 
             }
             if (fill_the_gaps){ //if there are some gaps to fill
                 /* TODO: shuffle left_indexes vertex... oh my, I think our random engine is needed as a parameter 
                 to create_child function*/
+                std::shuffle(std::begin(left_indexes), std::end(left_indexes), rng);
                 for (int i = 1; i < child.n; i++){
                     if(available_values[i]){ //if unused vertex is found
                         child.value[left_indexes[0]] = available_values[i]; 
@@ -277,24 +354,27 @@ class parents {
     public:
         std::vector <individual> sorted_population; //population sorted by fitness, descending
         std::vector <individual> all_parents;
-        int breeders_N; //number of parents to choose as the best individuals
-        int breeders_M; //number of parents to choose as random individuals
+        int breeders_N;                             //number of parents to choose as the best individuals
+        int breeders_M;                             //number of parents to choose as random individuals
         std::default_random_engine rng;
 
-        parents(int N, int M, std::vector <individual> input_population, std::default_random_engine my_rng){
+        parents(){}
+
+        parents(double p, double q, std::vector <individual> input_population, std::default_random_engine my_rng){
             /* Constructor initializing object keeping all parents in population.
             Parameters:
-            @N - percent of parents to choose as the best individuals --- it has to be double ;_; 
+            @p - percent of parents to choose as the best individuals --- it has to be double ;_; 
                                                                         //it's treated as fraction later
-            @M - percent of parents to choose as random individuals --- just like above
+            @q - percent of parents to choose as random individuals --- just like above
             @input_population - sorted population vector */
             rng = my_rng;
             sorted_population = input_population;
-            if (N + M > 100){
+            if (p + q > 100){
                 std::cout << "Error: wrong number of breeders. \n";
+                exit(-1);
             }
-            breeders_N = N*sorted_population.size();
-            breeders_M = M*sorted_population.size();
+            breeders_N = static_cast<int>(floor(p*sorted_population.size()));
+            breeders_M = static_cast<int>(floor(q*sorted_population.size()));
         }
 
         void choose1(){
@@ -321,78 +401,10 @@ class parents {
 
 };
 
-class individual {
-        /* value vector keeps the order of vertices to process by typical greedy algorithm.
-        We iterate not by i = 1, 2, 3, ..., n-1, but by values of value vector.
-        For example, value[1] = 3 means that the first vertex we should colour is vertex nr 3; 
-        value[2] = 7 means that the second vertex we should colour is vertex nr 7; and so on... */
 
-    public: 
-        std::vector <int> value; //vertices
-        int fitness; 
-        int n; //size of main adjacency matrix
-        std::default_random_engine rng;
-        std::vector <int> result_colours; //result_colours[0] is fitness xD - after running count_fitness
-
-        individual (std::default_random_engine my_rng, int my_n){ //engine cannot be passed as a constructor parameter;
-                                                                //it has to be only shuffle method argument
-            rng = my_rng;
-            n = my_n;
-            fitness = 0;
-            //initialize_value(); - I left it to remember about running this method when generating population 
-            //from external class - it shouldn't be always ran by a constructor
-            initialize_colours();
-            //generate(); - like above
-        }
-
-        void initialize_colours (){ //fill colours vector with n zeroes
-            for (int i = 0; i < n; i++){
-                result_colours.push_back(0);
-            }
-        }
-
-        void initialize_value (){ //fill value vector with n zeroes
-            for (int i = 0; i < n; i++){
-                value.push_back(0);
-            }
-        }
-
-        void generate() { //generate random permutation - random vertices' order
-            for (int i = 1; i < n; i++){ //first assign value equal to index to later shuffle it
-                value[i] = i;
-            }
-            std::shuffle(std::begin(value)+1, std::end(value), rng); 
-            /* shuffle everything apart from the first element
-            because the first element is dedicated for/to number of colours (which version is gramatically correct?)
-            and is initially equal to 0 */
-
-        }
-
-        void count_fitness (std::vector<std::vector<bool> > &matrix){
-            /* This function is the proper algorithm of graph colouring, which uses vertex order
-            coded in value vector.
-
-            fitness value is kept as result_colours[0] - it's the number of colours used for graph colouring. */
-            
-            int colour;
-            for (int i = 1; i < n; i++){ 
-                colour = lowest_colour(matrix[value[i]], result_colours); 
-                result_colours[value[i]] = colour;
-            }
-            fitness = result_colours[0];
-        }
-
-        void print_individual() { //every class should have something like this for debugging reasons I think
-            std::cout << "\nIndividual: ";
-            for (int i = 1; i < n; i++){
-                std::cout << value[i] << " ";
-            }
-            std::cout << "\nFitness: " << result_colours[0] << "\n";
-        }
-};
 
 class genetic_algorithm {
-    /* Here goes our super class, superhero or god. */
+
     private:
         int population_size; //I think it shouldn't be here (because it's inside genetic_parameters params), 
                             //but it may have some references in other classes - that has to be checked 
@@ -403,15 +415,14 @@ class genetic_algorithm {
                                     //and then just run solver
         parents chosen_parents; //parents chosen for the next breeding
 
-        //here started my neurosis
         std::default_random_engine rng;
 
 
         void generate_population(){
             for (int i = 0; i < population_size; i++){
-                population.push_back(individual(rng, n)); 
+                population.push_back(individual(n)); 
                 population[i].initialize_value(); //initialize vector with vertices order by 0
-                population[i].generate(); //generate an individual
+                population[i].generate(rng); //generate an individual
                 population[i].count_fitness(matrix); //run greedy algorithm on the individual
             }
         }
@@ -434,7 +445,7 @@ class genetic_algorithm {
         }
 
         void choose_parents(){
-            parents chosen_parents(params.breeders_N, params.breeders_M, population, rng); //fucking constructor with many params
+            parents chosen_parents(params.breeders_p, params.breeders_q, population, rng); 
             if (params.parents_choosing == 1){ //I plan to have more than one parents choosing method
                 chosen_parents.choose1();
             }
@@ -445,7 +456,7 @@ class genetic_algorithm {
 
 
         void create_children(){
-            //create as much children as rejected individuals
+            //create as many children as rejected individuals
             /* I don't have power to write it today. 
             Number of children for pair is:
             (population_size - number_of_parents) / (number_of_parents/2)
@@ -482,8 +493,7 @@ class genetic_algorithm {
              - mutation method?
              Yes, I added it partially. Thanks. */
             
-            std::random_device r;
-            rng = rng(r()); //arghhh
+            rng = std::default_random_engine{static_cast<long unsigned int>(time(0))};
             n = input_matrix.size();
             matrix = input_matrix;
             params = my_params;
@@ -494,7 +504,7 @@ class genetic_algorithm {
 
          
         std::vector <int> solve (){
-            while (/*terminating condition is not reached */){
+            while (false){ /*terminating condition is not reached */
                 /* Maybe there is another class needed, higher class? 
                 We have to:
                 1. Generate population
