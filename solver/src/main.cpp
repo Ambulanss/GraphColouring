@@ -293,8 +293,7 @@ class parents_pair{
                 } 
             }
             if (fill_the_gaps){ //if there are some gaps to fill
-                /* TODO: shuffle left_indexes vertex... oh my, I think our random engine is needed as a parameter 
-                to create_child function*/
+
                 std::shuffle(std::begin(left_indexes), std::end(left_indexes), rng);
                 for (int i = 1; i < child.n; i++){
                     if(available_values[i]){ //if unused vertex is found
@@ -302,8 +301,7 @@ class parents_pair{
                         /* assign first available vertex to random gap in child's values - random, because 
                         free left indexes were shuffled. */
                         available_values[i] = false; //set this vertex as used
-                        /* TODO: remove first element (on index 0) from left_indexes vector;
-                        it can't be used anymore. */
+                        left_indexes.erase(std::begin(left_indexes));
                     }
                 }
             }
@@ -321,14 +319,15 @@ class parents_pair{
             */
         }
 
-        void mutate_child1(double mutation_size){
+        void mutate_child1(double mutation_size, std::default_random_engine rng){
             /* Function swaps two random values in child. 
             We don't use it yet. */
-            int mutation_number = floor(((child.n-1) * mutation_size)); 
+            int mutation_number = static_cast<int>(floor(((child.n-1) * mutation_size))); 
+            auto dist = std::uniform_int_distribution(1, child.n);
             for (int i = 0; i < mutation_number; i++){
-            /* TODO: Generate two random indexes from [1, child.n);
-            Assign them to random1 and random2. */
-            swap(random1, random2);
+                random1 = dist(rng);
+                random2 = dist(rng);
+                swap(random1, random2);
             } 
         }
 
@@ -383,8 +382,9 @@ class parents {
             for (int i = 0; i < breeders_N; i++){ //put the first N individuals to all_parents vector
                 all_parents.push_back(sorted_population[i]); 
             }
+            auto dist = std::uniform_int_distribution(breeders_N, static_cast<int>(sorted_population.size()));
             for (int i = 0; i < breeders_M; i++){
-                /* TODO: temp = random value from [N, sorted_population.size()-1] */
+                temp = dist(rng);
                 all_parents.push_back(sorted_population[temp]);
             }
             std::shuffle(std::begin(all_parents), std::end(all_parents), rng); //suffle all parents
@@ -457,7 +457,7 @@ class genetic_algorithm {
 
         void create_children(){
             //create as many children as rejected individuals
-            /* I don't have power to write it today. 
+            /* 
             Number of children for pair is:
             (population_size - number_of_parents) / (number_of_parents/2)
             where number_of_parents = N + M.
