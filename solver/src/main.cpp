@@ -538,6 +538,40 @@ class genetic_algorithm {
 
 };
 
+void display_population (std::vector< individual > population, int pop_size, int n){
+    for (int i = 0; i < pop_size; i++){
+        std::cout << i << ".      Fitness: " << population[i].fitness << std::endl;
+        std::cout << "Order:  ";
+        for (int j = 0; j < n; j++){
+            std::cout << population[i].value[j] << " ";
+        }
+        std::cout << "\nColour: ";
+        for (int j = 0; j < n; j++){
+            std::cout << population[i].result_colours[j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void display_parameters (genetic_parameters params){
+    std::cout << "Population size: " << params.population_size << std::endl;
+    std::cout << "p: " << params.breeders_p << " q: " << params.breeders_q << std::endl;
+    std::cout << "Mutation chance: " << params.mutation_chance << "\nParents choosing: " << params.parents_choosing << std::endl;
+    std::cout << "Number of generations: " << params.number_of_generations << std::endl;
+    std::cout << "Breeding method: " << params.create_child_method << std::endl;
+    std::cout << "Mutation size: " << params.mutation_size << std::endl;
+}
+
+void display_matrix (std::vector<std::vector<bool> > matrix){
+    for (int i = 0; i < matrix.size(); i++){
+        for (int j = 0; j < matrix.size(); j++){
+            std::cout << matrix[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std:: endl;
+}
 
 int main(int argc, char const *argv[])
 {
@@ -556,37 +590,20 @@ int main(int argc, char const *argv[])
     std::cout << "\n----- Genetic algorithm -----\n";
 
     /* Display input matrix */
-    for (int i = 0; i < matrix.size(); i++){
-        for (int j = 0; j < matrix.size(); j++){
-            std::cout << matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
+    display_matrix(matrix);
+    
     /* Display genetic parameters */
     std::cout << "----- Parameters -----\n";
-    std::cout << "Population size: " << params.population_size << std::endl;
-    std::cout << "p: " << params.breeders_p << " q: " << params.breeders_q << std::endl;
-    std::cout << "Mutation chance: " << params.mutation_chance << "\nParents choosing: " << params.parents_choosing << std::endl;
-    std::cout << "Number of generations: " << params.number_of_generations << std::endl;
-    std::cout << "Breeding method: " << params.create_child_method << std::endl;
-    std::cout << "Mutation size: " << params.mutation_size << std::endl;
+    display_parameters(params);
 
     /* Display population values, used colours and fitness */
     genetic_algorithm genetic = genetic_algorithm(matrix, params);
     genetic.generate_population();
     std::cout << "\n----- Population -----\n";
-    for (int i = 0; i < params.population_size; i++){
-        std::cout << i << ".      Fitness: " << genetic.population[i].fitness << std::endl;
-        std::cout << "Order:  ";
-        for (int j = 0; j < matrix.size(); j++){
-            std::cout << genetic.population[i].value[j] << " ";
-        }
-        std::cout << "\nColour: ";
-        for (int j = 0; j < matrix.size(); j++){
-            std::cout << genetic.population[i].result_colours[j] << " ";
-        }
-        std::cout << std::endl;
-    }
+    display_population(genetic.population, params.population_size, matrix.size());
+    
+
+
 
     return 0;
 }
