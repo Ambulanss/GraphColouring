@@ -419,10 +419,10 @@ class parents {
 
 bool sort_by_fitness(individual a, individual b){
     /* -----
-    Returns the third argument for sort() function - for sorting in descending order
+    Returns the third argument for sort() function - for sorting in ascending order
     a vector of individual objects by value of 'fitness' field.
     ----- */
-    return a.fitness > b.fitness;
+    return a.fitness < b.fitness;
 }
 
 class genetic_algorithm {
@@ -454,8 +454,8 @@ class genetic_algorithm {
 
 
         void sort_population(){
-            /* Function sorting population by descending fitness function. 
-            Modifies population vector to make it ordered descending by population[i].fitness value
+            /* Function sorting population by ascending fitness function. 
+            Modifies population vector to make it ordered ascending by population[i].fitness value
             */
             std::sort(std::begin(population), std::end(population), sort_by_fitness);
 
@@ -601,7 +601,11 @@ int main(int argc, char const *argv[])
     genetic.generate_population();
     std::cout << "\n----- Population -----\n";
     display_population(genetic.population, params.population_size, matrix.size());
-    
+
+    /* Display sorted population */
+    genetic.sort_population();
+    std::cout << "----- Sorted population -----\n";
+    display_population(genetic.population, params.population_size, matrix.size());
 
 
 
