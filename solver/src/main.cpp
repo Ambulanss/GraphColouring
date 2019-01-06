@@ -218,12 +218,12 @@ class individual {
                 value.push_back(0);
             }
         }
-
-        void generate(std::default_random_engine rng) { //generate random permutation - random vertices' order
+        //std::default_random_engine rng
+        void generate() { //generate random permutation - random vertices' order
             for (int i = 1; i < n; i++){ //first assign value equal to index to later shuffle it
                 value[i] = i;
             }
-            std::shuffle(std::begin(value)+1, std::end(value), rng); 
+            std::random_shuffle(std::begin(value)+1, std::end(value)); 
             /* shuffle everything apart from the first element
             because the first element is dedicated for/to number of colours (which version is gramatically correct?)
             and is initially equal to 0 */
@@ -309,7 +309,7 @@ class parents_pair{
             }
             if (fill_the_gaps){ //if there are some gaps to fill
 
-                std::shuffle(std::begin(left_indexes), std::end(left_indexes), rng);
+                std::random_shuffle(std::begin(left_indexes), std::end(left_indexes));
                 for (int i = 1; i < child.n; i++){
                     if(available_values[i]){ //if unused vertex is found
                         child.value[left_indexes[0]] = available_values[i]; 
@@ -342,6 +342,7 @@ class parents_pair{
             for (int i = 0; i < mutation_number; i++){
                 random1 = dist(rng);
                 random2 = dist(rng);
+                std::cout <<"[DEBUG] Random numbers in mutate_child1: " << random1 << " " << random2<<"\n";
                 swap(random1, random2);
             } 
         }
@@ -444,7 +445,7 @@ class genetic_algorithm {
             for (int i = 0; i < population_size; i++){
                 population.push_back(individual(n)); 
                 population[i].initialize_value(); //initialize vector with vertices order by 0
-                population[i].generate(rng); //generate an individual
+                population[i].generate(); //generate an individual
                 population[i].count_fitness(matrix); //run greedy algorithm on the individual
             }
         }
@@ -508,8 +509,8 @@ class genetic_algorithm {
              parents choosing method should be used
              - mutation method?
              Yes, I added it partially. Thanks. */
-            
-            rng = std::default_random_engine{static_cast<long unsigned int>(time(0))};
+
+            rng = std::default_random_engine();
             n = input_matrix.size();
             matrix = input_matrix;
             params = my_params;
