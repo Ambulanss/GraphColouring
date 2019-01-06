@@ -157,7 +157,7 @@ class genetic_parameters{
         int population_size;
         double breeders_p; //percent of all individuals; parents chosen as the best of all - TODO: it has to be double
         double breeders_q; //percent of all individuals; parents chosen randomly - TODO: it has to be double
-        double mutation_change; //chance for mutation, expressed as percent - TODO: it has to be double
+        double mutation_chance; //chance for mutation, expressed as percent - TODO: it has to be double
         /* parents_choosing - number expressing when should we use 
         first parents choosing method and when the second one. 
         It means after which generation should we switch to the second method. */
@@ -165,6 +165,21 @@ class genetic_parameters{
         int number_of_generations; //number of generations before stopping the algorithm
         int create_child_method; //if 1, use first mutation method, if 2, use the second one
         double mutation_size; //percent of values in child that should be mutated; expressed as a fraction
+
+        genetic_parameters(){}
+
+        genetic_parameters (int pop_size, double p = 0.5, double q = 0.5, double mut_chance = 0.0, 
+                            int par_choosing = 1, int number_of_gen = 100, int breeding_method = 1, 
+                            double mut_size = 0.0){
+                population_size = pop_size;
+                breeders_p = p;
+                breeders_q = q;
+                mutation_chance = mut_chance;
+                parents_choosing = par_choosing;
+                number_of_generations = number_of_gen;
+                create_child_method = breeding_method;
+                mutation_size = mut_size;
+            }
 };
 
 
@@ -273,7 +288,7 @@ class parents_pair{
             bool fill_the_gaps = false; //if this is true, we know that there are some gaps (it will fore sure always be true)
             
             int crosspoint;
-            auto dist = std::uniform_int_distribution(1, child.n);
+            auto dist = std::uniform_int_distribution<int>(1, child.n);
             crosspoint = dist(rng);
             
             for (int i = 1; i < crosspoint; i++){ //we take first values from parent A
@@ -323,7 +338,7 @@ class parents_pair{
             /* Function swaps two random values in child. 
             We don't use it yet. */
             int mutation_number = static_cast<int>(floor(((child.n-1) * mutation_size))); 
-            auto dist = std::uniform_int_distribution(1, child.n);
+            auto dist = std::uniform_int_distribution<int>(1, child.n);
             for (int i = 0; i < mutation_number; i++){
                 random1 = dist(rng);
                 random2 = dist(rng);
@@ -382,7 +397,7 @@ class parents {
             for (int i = 0; i < breeders_N; i++){ //put the first N individuals to all_parents vector
                 all_parents.push_back(sorted_population[i]); 
             }
-            auto dist = std::uniform_int_distribution(breeders_N, static_cast<int>(sorted_population.size()));
+            auto dist = std::uniform_int_distribution<int>(breeders_N, static_cast<int>(sorted_population.size()));
             for (int i = 0; i < breeders_M; i++){
                 temp = dist(rng);
                 all_parents.push_back(sorted_population[temp]);
@@ -401,11 +416,18 @@ class parents {
 
 };
 
-
+bool sort_by_fitness(individual a, individual b){
+    /* -----
+    Returns the third argument for sort() function - for sorting in descending order
+    a vector of individual objects by value of 'fitness' field.
+    ----- */
+    return a.fitness > b.fitness;
+}
 
 class genetic_algorithm {
 
-    private:
+    //private:
+    public:
         int population_size; //I think it shouldn't be here (because it's inside genetic_parameters params), 
                             //but it may have some references in other classes - that has to be checked 
         int n; //number of vertices + 1 - size of graph adjacency matrix - also in params, but I would leave it here for comfort
@@ -428,13 +450,7 @@ class genetic_algorithm {
         }
 
 
-        bool sort_by_fitness(individual a, individual b){
-            /* -----
-            Returns the third argument for sort() function - for sorting in descending order
-            a vector of individual objects by value of 'fitness' field.
-            ----- */
-            return a.fitness > b.fitness;
-}
+
 
         void sort_population(){
             /* Function sorting population by descending fitness function. 
@@ -477,7 +493,7 @@ class genetic_algorithm {
         }
 
 
-    public:
+    //public:
 
 
         genetic_algorithm (std::vector<std::vector<bool> > &input_matrix, genetic_parameters my_params){
@@ -521,6 +537,7 @@ class genetic_algorithm {
 
 };
 
+
 int main(int argc, char const *argv[])
 {
     std::vector<std::vector<bool> >matrix(parse_input(argc, argv));
@@ -533,5 +550,42 @@ int main(int argc, char const *argv[])
     result2 = largest_first(matrix);
     std::cout << "\n----- Largest first algorithm -----";
     print_result(result2);
+    std::vector<int> result3;
+    genetic_parameters params = genetic_parameters(10);
+    std::cout << "\n----- Genetic algorithm -----\n";
+
+    /* Display input matrix */
+    for (int i = 0; i < matrix.size(); i++){
+        for (int j = 0; j < matrix.size(); j++){
+            std::cout << matrix[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    /* Display genetic parameters */
+    std::cout << "----- Parameters -----\n";
+    std::cout << "Population size: " << params.population_size << std::endl;
+    std::cout << "p: " << params.breeders_p << " q: " << params.breeders_q << std::endl;
+    std::cout << "Mutation chance: " << params.mutation_chance << "\nParents choosing: " << params.parents_choosing << std::endl;
+    std::cout << "Number of generations: " << params.number_of_generations << std::endl;
+    std::cout << "Breeding method: " << params.create_child_method << std::endl;
+    std::cout << "Mutation size: " << params.mutation_size << std::endl;
+
+    /* Display population values, used colours and fitness */
+    genetic_algorithm genetic = genetic_algorithm(matrix, params);
+    genetic.generate_population();
+    std::cout << "\n----- Population -----\n";
+    for (int i = 0; i < params.population_size; i++){
+        std::cout << i << ".      Fitness: " << genetic.population[i].fitness << std::endl;
+        std::cout << "Order:  ";
+        for (int j = 0; j < matrix.size(); j++){
+            std::cout << genetic.population[i].value[j] << " ";
+        }
+        std::cout << "\nColour: ";
+        for (int j = 0; j < matrix.size(); j++){
+            std::cout << genetic.population[i].result_colours[j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
     return 0;
 }
