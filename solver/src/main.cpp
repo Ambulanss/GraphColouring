@@ -295,15 +295,10 @@ class parents_pair{
             I would add functionality to randomly use parent_A's values at the beginning 
             of the child (before crosspoint) or at the end (after crosspoint).
             */
-            std::cout << "Create child\n";
             child = individual(n);
             child.initialize_value(); //now the child vector is filled with zeroes
             std::vector <bool> available_values (child.n, true); //should create vector with n true values
-            std::cout << "available values: ";
-            for (int i = 0; i < n; i++){
-                std::cout << available_values[i] << " ";
-            }
-            std::cout << std::endl;
+            
             available_values[0] = false; //we don't have vertex nr 0
             
             std::vector <int> left_indexes; //we will use them to know where the gaps are
@@ -313,11 +308,10 @@ class parents_pair{
             std::random_device rd;
             std::mt19937 mt(rd());
             auto dist = std::uniform_int_distribution<int>(1, child.n-1);
-            std::cout << "child.n: " << child.n << std::endl;
             crosspoint = dist(mt);
+            std::cout << "--- Create child ---\n";
             std::cout << "Crosspoint: " << crosspoint << std::endl;
             std::cout << "Parent_A values: ";
-
             for (int i = 0; i < parent_A.value.size(); i++)
                 std::cout << parent_A.value[i] << " ";
             std::cout << "\nParent_B values: ";
@@ -328,7 +322,6 @@ class parents_pair{
             for (int i = 1; i < crosspoint; i++){ //we take first values from parent A
                 child.value[i] = parent_A.value[i];
                 available_values[parent_A.value[i]] = false; //we mark used vertex as impossible to use
-                std::cout << "Taking from parent A value " << parent_A.value[i] << " and put it on i = " << i << std::endl;
                 /* reminder: value field contains vertices' numbers, so parent_A.value[2] = 3 means
                 that parent_A is vertex order in which the second vertex processed by greedy algorithm
                 is the third vertex in the input graph */
@@ -337,7 +330,6 @@ class parents_pair{
                 if (available_values[parent_B.value[i]] == true){ //if vertex hasn't been used yet
                     child.value[i] = parent_B.value[i];    //then insert it into child
                     available_values[parent_B.value[i]] = false;
-                    std::cout << "Taking from parent B value " << parent_B.value[i] << " and put it on i = " << i << std::endl;
                 }
                 else {                                  //remember that you have to fill this gap later
                     left_indexes.push_back(i);          //index i has no vertex
@@ -346,38 +338,18 @@ class parents_pair{
             }
             
             if (fill_the_gaps){ //if there are some gaps to fill
-
-                std::cout << "left indexes: ";
-                for (int i = 0; i < left_indexes.size(); i++)
-                    std::cout << left_indexes[i] << " ";
-                std::cout << std::endl;
-            
-                std::cout << "Child before filling gaps:\n";
-                for (int i = 0; i < child.value.size(); i++){
-                    std::cout << child.value[i] << " ";
-                }
-                std::cout << std::endl;
                 std::random_shuffle(std::begin(left_indexes), std::end(left_indexes));
                 for (int i = 1; i < child.n; i++){
-                    std::cout << "Im in fatal for.\n";
                     if(available_values[i]){ //if unused vertex is found
-                        std::cout << "I found unused value = " << i << std::endl;
                         child.value[left_indexes[0]] = i; 
-                        std::cout << "child.value[left_indexes[0]] = available_values[i] \n";
-                        std::cout << "left_indexes[0] = " << left_indexes[0] << std::endl;
-                        std::cout << "child.value[left_indexes[0]] = " << child.value[left_indexes[0]] << std::endl;
                         /* assign first available vertex to random gap in child's values - random, because 
                         free left indexes were shuffled. */
                         available_values[i] = false; //set this vertex as used
-                        std::cout << "Now erase first element from left indexes, left it like: \n";
                         left_indexes.erase(std::begin(left_indexes));
-                        for (int i = 0; i < left_indexes.size(); i++){
-                            std::cout << left_indexes[i] << " ";
-                        }
-                        std::cout << std::endl;
                     }
                 }
             }
+            std::cout << "Child: ";
             for (int i = 0; i < n; i++){
                 std::cout << child.value[i] << " ";
             }
@@ -468,7 +440,7 @@ class parents {
             auto dist = std::uniform_int_distribution<int>(breeders_N, static_cast<int>(sorted_population.size()));
             for (int i = 0; i < breeders_M; i++){
                 temp = dist(rng);
-                std::cout << "[Choose1] random index: " << temp << std::endl;
+                std::cout << "[Choose1] random individual index: " << temp << std::endl;
                 all_parents.push_back(sorted_population[temp]);
             }
             std::cout << "Unshuffled parents: \n";
@@ -544,7 +516,6 @@ class genetic_algorithm {
             }
             for (int i = 0; i < chosen_parents.all_parents.size(); i++){
                 new_population.push_back(chosen_parents.all_parents[i]);
-                std::cout << "wpycham element do new_population, i = " << i << std::endl;
             }
         }
 
@@ -554,21 +525,15 @@ class genetic_algorithm {
             int size = chosen_parents.all_parents.size();
             int goal = params.population_size - new_population.size();
             std::vector<parents_pair> pairs;
-            std::cout << "size = " << size << std::endl;
-            std::cout << "size/2 = " << size/2 << std::endl;
             for (int i = 0; i < size/2; i++){
                 pairs.push_back(parents_pair(chosen_parents.all_parents[i], chosen_parents.all_parents[size-1-i], n));
-                std::cout << "creating pairs, i = " << i << std::endl;
             }
             int i = 0;
-            std::cout << "Create children dupa\n" << std::endl;
             while (goal--){
-                std::cout << "i = " << i << std::endl;
                 pairs[i].create_child1(rng);
                 new_population.push_back(pairs[i].child);
                 i++;
                 if (i == pairs.size()){
-                    std::cout << "Reseting i\n" << std::endl;
                     i = 0;
                 }
             }
@@ -698,10 +663,12 @@ int main(int argc, char const *argv[])
     genetic.choose_parents();
 
     /* Create children */
+    std::cout << "----- Next generation -----\n";
     genetic.create_children();
     for (int i = 0; i < params.population_size; i++){
         genetic.new_population[i].count_fitness(matrix);
     }
+    std::cout << "\n--- New population ---" << std::endl;
     display_population(genetic.new_population, params.population_size, matrix.size());
 
 
