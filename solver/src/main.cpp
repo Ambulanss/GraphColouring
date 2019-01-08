@@ -309,15 +309,15 @@ class parents_pair{
             std::mt19937 mt(rd());
             auto dist = std::uniform_int_distribution<int>(1, child.n-1);
             crosspoint = dist(mt);
-            std::cout << "--- Create child ---\n";
-            std::cout << "Crosspoint: " << crosspoint << std::endl;
-            std::cout << "Parent_A values: ";
-            for (int i = 0; i < parent_A.value.size(); i++)
-                std::cout << parent_A.value[i] << " ";
-            std::cout << "\nParent_B values: ";
-            for (int i = 0; i < parent_B.value.size(); i++)
-                std::cout << parent_B.value[i] << " ";
-            std::cout << std::endl;
+            //std::cout << "--- Create child ---\n";
+            //std::cout << "Crosspoint: " << crosspoint << std::endl;
+            //std::cout << "Parent_A values: ";
+            //for (int i = 0; i < parent_A.value.size(); i++)
+            //    std::cout << parent_A.value[i] << " ";
+            //std::cout << "\nParent_B values: ";
+            //for (int i = 0; i < parent_B.value.size(); i++)
+            //    std::cout << parent_B.value[i] << " ";
+            //std::cout << std::endl;
 
             for (int i = 1; i < crosspoint; i++){ //we take first values from parent A
                 child.value[i] = parent_A.value[i];
@@ -349,11 +349,11 @@ class parents_pair{
                     }
                 }
             }
-            std::cout << "Child: ";
-            for (int i = 0; i < n; i++){
-                std::cout << child.value[i] << " ";
-            }
-            std::cout << std::endl;
+            //std::cout << "Child: ";
+            //for (int i = 0; i < n; i++){
+            //    std::cout << child.value[i] << " ";
+            //}
+            //std::cout << std::endl;
         }
 
         void create_child2(){
@@ -424,11 +424,11 @@ class parents {
                 exit(-1);
             }
             breeders_N = static_cast<int>(floor(p*sorted_population.size()));
-            std::cout << "Breeders_N: " << breeders_N << std::endl;
+            //std::cout << "Breeders_N: " << breeders_N << std::endl;
             breeders_M = static_cast<int>(floor(q*sorted_population.size()));
-            std::cout << "Breeders_M: " << breeders_M << std::endl;
+            //std::cout << "Breeders_M: " << breeders_M << std::endl;
             parents_number = breeders_N + breeders_M;
-            std::cout << "Parents number: " << parents_number << std::endl;
+            //std::cout << "Parents number: " << parents_number << std::endl;
         }
 
         void choose1(){
@@ -440,14 +440,14 @@ class parents {
             auto dist = std::uniform_int_distribution<int>(breeders_N, static_cast<int>(sorted_population.size()));
             for (int i = 0; i < breeders_M; i++){
                 temp = dist(rng);
-                std::cout << "[Choose1] random individual index: " << temp << std::endl;
+                //std::cout << "[Choose1] random individual index: " << temp << std::endl;
                 all_parents.push_back(sorted_population[temp]);
             }
-            std::cout << "Unshuffled parents: \n";
-            display_population(all_parents, parents_number, sorted_population[1].n);
+            //std::cout << "Unshuffled parents: \n";
+            //display_population(all_parents, parents_number, sorted_population[1].n);
             std::random_shuffle(std::begin(all_parents), std::end(all_parents)); //suffle all parents
-            std::cout << "Shuffled parents:   \n";
-            display_population(all_parents, parents_number, sorted_population[1].n);
+            //std::cout << "Shuffled parents:   \n";
+            //display_population(all_parents, parents_number, sorted_population[1].n);
         }
 
         void choose2(){
@@ -633,22 +633,22 @@ individual one_generation(std::vector< individual > my_population, std::vector<s
     genetic_algorithm genetic = genetic_algorithm(matrix, params);
     genetic.population = my_population;
 
-    std::cout << "\n----- Population -----\n";
-    display_population(genetic.population, params.population_size, matrix.size());
+    //std::cout << "\n----- Population -----\n";
+    //display_population(genetic.population, params.population_size, matrix.size());
 
     genetic.sort_population();
-    std::cout << "----- Sorted population -----\n";
-    display_population(genetic.population, params.population_size, matrix.size());
+    //std::cout << "----- Sorted population -----\n";
+    //display_population(genetic.population, params.population_size, matrix.size());
     if (params.number_of_generations > 0) {  
         genetic.choose_parents();
 
-        std::cout << "----- Next generation -----\n";
+        //std::cout << "----- Next generation -----\n";
         genetic.create_children();
         for (int i = 0; i < params.population_size; i++){
             genetic.new_population[i].count_fitness(matrix);
         }
-        std::cout << "\n--- New population ---" << std::endl;
-        display_population(genetic.new_population, params.population_size, matrix.size());
+        //std::cout << "\n--- New population ---" << std::endl;
+        //display_population(genetic.new_population, params.population_size, matrix.size());
 
         params.number_of_generations--; 
         return one_generation(genetic.new_population, matrix, params);
@@ -659,26 +659,26 @@ individual one_generation(std::vector< individual > my_population, std::vector<s
 }
 
 auto first_generation(std::vector<std::vector<bool> > &matrix, genetic_parameters params){ 
-    std::cout << "number of generations: " << params.number_of_generations << std::endl << std::endl;
+    std::cout << "number of generations: " << params.number_of_generations << std::endl;
     genetic_algorithm genetic = genetic_algorithm(matrix, params);
     genetic.generate_population();
 
-    std::cout << "\n----- Population -----\n";
-    display_population(genetic.population, params.population_size, matrix.size());
+    //std::cout << "\n----- Population -----\n";
+    //display_population(genetic.population, params.population_size, matrix.size());
 
     genetic.sort_population();
-    std::cout << "----- Sorted population -----\n";
-    display_population(genetic.population, params.population_size, matrix.size());
+    //std::cout << "----- Sorted population -----\n";
+    //display_population(genetic.population, params.population_size, matrix.size());
 
     genetic.choose_parents();
 
-    std::cout << "----- Next generation -----\n";
+    //std::cout << "----- Next generation -----\n";
     genetic.create_children();
     for (int i = 0; i < params.population_size; i++){
         genetic.new_population[i].count_fitness(matrix);
     }
-    std::cout << "\n--- New population ---" << std::endl;
-    display_population(genetic.new_population, params.population_size, matrix.size());
+    //std::cout << "\n--- New population ---" << std::endl;
+    //display_population(genetic.new_population, params.population_size, matrix.size());
 
 
     params.number_of_generations--;
@@ -701,7 +701,7 @@ int main(int argc, char const *argv[])
     print_result(result2);
     std::vector<int> result3;
     /* last parameter typed below is number of generations */
-    genetic_parameters params = genetic_parameters(10, 0.25, 0.25, 0.0, 1, 100); 
+    genetic_parameters params = genetic_parameters(10, 0.25, 0.25, 0.0, 1, 1000); 
     std::cout << "\n----- Genetic algorithm -----\n";
 
     /* Display input matrix */
@@ -715,15 +715,15 @@ int main(int argc, char const *argv[])
     individual result_gen = first_generation(matrix, params);
     std::cout << "\n\nFinal result: \n";
     std::cout << "Fitness: " << result_gen.fitness << std::endl;
-    std::cout << "Order:   ";
-    for (int i = 0; i < result_gen.value.size(); i++){
-        std::cout << result_gen.value[i] << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "Colours: ";
-    for (int i = 0; i < result_gen.result_colours.size(); i++){
-        std::cout << result_gen.result_colours[i] << " ";
-    }
+    //std::cout << "Order:   ";
+    //for (int i = 0; i < result_gen.value.size(); i++){
+    //    std::cout << result_gen.value[i] << " ";
+    //}
+    //std::cout << std::endl;
+    //std::cout << "Colours: ";
+    //for (int i = 0; i < result_gen.result_colours.size(); i++){
+    //    std::cout << result_gen.result_colours[i] << " ";
+    //}
     std::cout << std::endl;
 
     return 0;
