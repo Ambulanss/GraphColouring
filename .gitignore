@@ -2,5 +2,6 @@ kocor
 *.exe
 instances/*
 \.vscode/settings\.json
-bin
+bin/*
 instance_generator/*.txt
+*solver/build
