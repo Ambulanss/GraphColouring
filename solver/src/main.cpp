@@ -629,7 +629,7 @@ void display_matrix (std::vector<std::vector<bool> > matrix){
 }
 
 individual one_generation(std::vector< individual > my_population, std::vector<std::vector<bool> > &matrix, genetic_parameters params){
-    std::cout << "number of generations: " << params.number_of_generations << std::endl << std::endl;
+    //std::cout << "number of generations: " << params.number_of_generations << std::endl << std::endl;
     genetic_algorithm genetic = genetic_algorithm(matrix, params);
     genetic.population = my_population;
 
@@ -659,7 +659,7 @@ individual one_generation(std::vector< individual > my_population, std::vector<s
 }
 
 auto first_generation(std::vector<std::vector<bool> > &matrix, genetic_parameters params){ 
-    std::cout << "number of generations: " << params.number_of_generations << std::endl;
+    //std::cout << "number of generations: " << params.number_of_generations << std::endl;
     genetic_algorithm genetic = genetic_algorithm(matrix, params);
     genetic.generate_population();
 
@@ -701,7 +701,7 @@ int main(int argc, char const *argv[])
     print_result(result2);
     std::vector<int> result3;
     /* last parameter typed below is number of generations */
-    genetic_parameters params = genetic_parameters(10, 0.25, 0.25, 0.0, 1, 1000); 
+    genetic_parameters params = genetic_parameters(50, 0.2, 0.0, 0.0, 1, 100); 
     std::cout << "\n----- Genetic algorithm -----\n";
 
     /* Display input matrix */
