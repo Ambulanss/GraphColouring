@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <random>
 #include <ctime>
+#include <fstream>
 
 int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     /* -----
@@ -735,6 +736,7 @@ individual genetic_solve(std::vector<std::vector<bool> > &matrix, genetic_parame
 
 int main(int argc, char const *argv[])
 {
+    std::ofstream outfile;
     std::vector<std::vector<bool> >matrix(parse_input(argc, argv));
 
     std::vector<int> result;
@@ -780,6 +782,15 @@ int main(int argc, char const *argv[])
     //    std::cout << result_gen.result_colours[i] << " ";
     //}
     std::cout << std::endl;
+
+    outfile.open("results.txt", std::ios_base::app);
+    size_t found = std::string(argv[1]).find_last_of("/");
+    size_t found2 = std::string(argv[1]).find_last_of(".");
+    outfile << std::string(argv[1]).substr(found+1, found2) << ";" << result[0] << ";" << result2[0] << ";";
+    outfile << result_gen.fitness << ";" << params.population_size << ";";
+    outfile << params.breeders_p << ";" << params.breeders_q << ";";
+    outfile << params.population_size << "\n";
+    outfile.close();
 
     return 0;
 }
