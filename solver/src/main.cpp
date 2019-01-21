@@ -628,7 +628,7 @@ void display_matrix (std::vector<std::vector<bool> > matrix){
     std::cout << std:: endl;
 }
 
-individual one_generation(std::vector< individual > my_population, std::vector<std::vector<bool> > &matrix, genetic_parameters params){
+auto one_generation(std::vector< individual > my_population, std::vector<std::vector<bool> > &matrix, genetic_parameters params){
     //std::cout << "number of generations: " << params.number_of_generations << std::endl << std::endl;
     genetic_algorithm genetic = genetic_algorithm(matrix, params);
     genetic.population = my_population;
@@ -639,23 +639,18 @@ individual one_generation(std::vector< individual > my_population, std::vector<s
     genetic.sort_population();
     //std::cout << "----- Sorted population -----\n";
     //display_population(genetic.population, params.population_size, matrix.size());
-    if (params.number_of_generations > 0) {  
-        genetic.choose_parents();
+    
+    genetic.choose_parents();
 
-        //std::cout << "----- Next generation -----\n";
-        genetic.create_children();
-        for (int i = 0; i < params.population_size; i++){
-            genetic.new_population[i].count_fitness(matrix);
-        }
-        //std::cout << "\n--- New population ---" << std::endl;
-        //display_population(genetic.new_population, params.population_size, matrix.size());
-
-        params.number_of_generations--; 
-        return one_generation(genetic.new_population, matrix, params);
+    //std::cout << "----- Next generation -----\n";
+    genetic.create_children();
+    for (int i = 0; i < params.population_size; i++){
+        genetic.new_population[i].count_fitness(matrix);
     }
-    else {
-        return genetic.population[0];
-    }
+    //std::cout << "\n--- New population ---" << std::endl;
+    //display_population(genetic.new_population, params.population_size, matrix.size());
+ 
+    return genetic.new_population;
 }
 
 auto first_generation(std::vector<std::vector<bool> > &matrix, genetic_parameters params){ 
@@ -680,12 +675,33 @@ auto first_generation(std::vector<std::vector<bool> > &matrix, genetic_parameter
     //std::cout << "\n--- New population ---" << std::endl;
     //display_population(genetic.new_population, params.population_size, matrix.size());
 
-
-    params.number_of_generations--;
-    return one_generation(genetic.new_population, matrix, params);
+    return genetic.new_population;
 }
 
+auto last_generation(std::vector< individual > my_population, std::vector<std::vector<bool> > &matrix, genetic_parameters params){
+    genetic_algorithm genetic = genetic_algorithm(matrix, params);
+    genetic.population = my_population;
+    genetic.sort_population();
+    return genetic.population[0];
+}
 
+individual genetic_solve(std::vector<std::vector<bool> > &matrix, genetic_parameters params){
+    std::vector< individual > temp_population;
+    int iterations = params.number_of_generations;
+    if (iterations == 0){
+        std::cout << "Number of generations cannot be equal to 0.\n";
+        exit(0);
+    }
+    temp_population = first_generation(matrix, params);
+    iterations--;
+
+    while (iterations){
+        temp_population = one_generation(temp_population, matrix, params);
+        iterations--;
+    }
+    
+    return last_generation(temp_population, matrix, params);
+}
 
 int main(int argc, char const *argv[])
 {
@@ -712,8 +728,8 @@ int main(int argc, char const *argv[])
     display_parameters(params);
 
     //individual result (matrix.size());
-    individual result_gen = first_generation(matrix, params);
-    std::cout << "\n\nFinal result: \n";
+    individual result_gen = genetic_solve(matrix, params);
+    std::cout << "\nFinal result \n";
     std::cout << "Fitness: " << result_gen.fitness << std::endl;
     //std::cout << "Order:   ";
     //for (int i = 0; i < result_gen.value.size(); i++){
