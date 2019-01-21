@@ -4,6 +4,7 @@
 #include "graphloading.hpp"
 #include <algorithm>
 #include <random>
+#include <ctime>
 
 int lowest_colour(std::vector<bool> &row, std::vector<int> &result){
     /* -----
@@ -371,14 +372,23 @@ class parents_pair{
         void mutate_child1(double mutation_size, std::default_random_engine rng){
             /* Function swaps two random values in child. 
             We don't use it yet. */
+            std::cout << "[DEBUG] Child before mutation: ";
+            for (int i = 0; i < child.n; i++)
+                std::cout << child.value[i] << " ";
+            std::cout << std::endl;
             int mutation_number = static_cast<int>(floor(((child.n-1) * mutation_size))); 
+            std::cout << "[DEBUG] Number of pairs mutating in a child: " << mutation_number << std::endl;
             auto dist = std::uniform_int_distribution<int>(1, child.n);
             for (int i = 0; i < mutation_number; i++){
                 random1 = dist(rng);
                 random2 = dist(rng);
-                std::cout <<"[DEBUG] Random numbers in mutate_child1: " << random1 << " " << random2<<"\n";
+                std::cout <<"[DEBUG] Random numbers in mutate_child1: " << random1 << " " << random2 << "\n";
                 swap(random1, random2);
-            } 
+            }
+            std::cout << "[DEBUG] Child after mutation: "; 
+            for (int i = 0; i < child.n; i++)
+                std::cout << child.value[i] << " ";
+            std::cout << std::endl;
         }
 
         void mutate_child2(){
@@ -553,7 +563,20 @@ class genetic_algorithm {
 
         }
 
-        void mutate(){
+        void mutate(parents_pair pair){
+            /*std::cout << "[DEBUG-mutate] Mutation chance: " << params.mutation_chance << std::endl;
+            double mutate_rand;
+            std::random_device rd;
+            std::mt19937 mt(rd());
+            auto dist = std::uniform_double_distribution<double>(0, 1);
+            mutate_rand = dist(mt);
+            std::cout << "[DEBUG-mutate] Mutate random: " << mutate_rand << std::endl;
+            if (mutate_rand > params.mutation_chance){
+                std::cout << "[DEBUG-mutate] Randomly generated value is greater than mutation chance\n";
+                //pair.child.mutate_child1();
+
+            }
+            */
             //swap random pairs 
             //don't do it now, we have to think about it
             //anyway, if we decide to mutate, we have to distinguish between methods
@@ -612,10 +635,10 @@ class genetic_algorithm {
 void display_parameters (genetic_parameters params){
     std::cout << "Population size: " << params.population_size << std::endl;
     std::cout << "p: " << params.breeders_p << " q: " << params.breeders_q << std::endl;
-    std::cout << "Mutation chance: " << params.mutation_chance << "\nParents choosing: " << params.parents_choosing << std::endl;
-    std::cout << "Number of generations: " << params.number_of_generations << std::endl;
-    std::cout << "Breeding method: " << params.create_child_method << std::endl;
-    std::cout << "Mutation size: " << params.mutation_size << std::endl;
+    //std::cout << "Mutation chance: " << params.mutation_chance << "\nParents choosing: " << params.parents_choosing << std::endl;
+    std::cout << "Number of generations: " << params.number_of_generations << std::endl << std::endl;;
+    //std::cout << "Breeding method: " << params.create_child_method << std::endl;
+    //std::cout << "Mutation size: " << params.mutation_size << std::endl;
 }
 
 void display_matrix (std::vector<std::vector<bool> > matrix){
@@ -686,6 +709,9 @@ auto last_generation(std::vector< individual > my_population, std::vector<std::v
 }
 
 individual genetic_solve(std::vector<std::vector<bool> > &matrix, genetic_parameters params){
+    clock_t begin = clock();
+    clock_t end;
+    double elapsed_secs, one_gen_time = 0;
     std::vector< individual > temp_population;
     int iterations = params.number_of_generations;
     if (iterations == 0){
@@ -695,11 +721,15 @@ individual genetic_solve(std::vector<std::vector<bool> > &matrix, genetic_parame
     temp_population = first_generation(matrix, params);
     iterations--;
 
-    while (iterations){
+    while (iterations && elapsed_secs < 290 && (elapsed_secs + one_gen_time) < 290){
         temp_population = one_generation(temp_population, matrix, params);
         iterations--;
+        end = clock();
+        elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+        if (one_gen_time == 0)
+            one_gen_time = elapsed_secs; // keep estimated one generation time
     }
-    
+    std::cout << "Elapsed seconds: " << elapsed_secs << std::endl;
     return last_generation(temp_population, matrix, params);
 }
 
@@ -710,27 +740,36 @@ int main(int argc, char const *argv[])
     std::vector<int> result;
     result = greedy(matrix);
     std::cout << "\n----- Greedy algorithm -----";
-    print_result(result);
+    //print_result(result);
+    std::cout << "\nNumber of colours: " << result[0] << std::endl;
     std::vector<int> result2;
     result2 = largest_first(matrix);
     std::cout << "\n----- Largest first algorithm -----";
-    print_result(result2);
-    std::vector<int> result3;
+    //print_result(result2);
+    std::cout << "\nNumber of colours: " << result2[0] << std::endl;
+    
     /* last parameter typed below is number of generations */
     genetic_parameters params = genetic_parameters(50, 0.2, 0.0, 0.0, 1, 100); 
+    switch(argc){
+        case 6: params.number_of_generations = std::stoi(argv[5]);
+        case 5: params.breeders_q = std::stod(argv[4]);
+        case 4: params.breeders_p = std::stod(argv[3]);
+        case 3: params.population_size = std::stoi(argv[2]);
+        case 2: break;
+        default: std::cout << "Incorrect number of parameters\n";
+    }
     std::cout << "\n----- Genetic algorithm -----\n";
 
     /* Display input matrix */
     //display_matrix(matrix);
     
     /* Display genetic parameters */
-    std::cout << "----- Parameters -----\n";
+    std::cout << "--- Parameters ---\n";
     display_parameters(params);
 
-    //individual result (matrix.size());
     individual result_gen = genetic_solve(matrix, params);
-    std::cout << "\nFinal result \n";
-    std::cout << "Fitness: " << result_gen.fitness << std::endl;
+    std::cout << "--- Final result ---\n";
+    std::cout << "Number of colours: " << result_gen.fitness << std::endl;
     //std::cout << "Order:   ";
     //for (int i = 0; i < result_gen.value.size(); i++){
     //    std::cout << result_gen.value[i] << " ";
