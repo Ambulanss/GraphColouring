@@ -722,7 +722,7 @@ individual genetic_solve(std::vector<std::vector<bool> > &matrix, genetic_parame
     temp_population = first_generation(matrix, params);
     iterations--;
 
-    while (iterations && elapsed_secs < 290 && (elapsed_secs + one_gen_time) < 290){
+    while (iterations && elapsed_secs < 170 && (elapsed_secs + one_gen_time) < 170){
         temp_population = one_generation(temp_population, matrix, params);
         iterations--;
         end = clock();
